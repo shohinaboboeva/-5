@@ -26,11 +26,17 @@ namespace Симулятор_простого_рестарана_5
 
         public IEnumerator<MenuItem> GetEnumerator()
         {
-            foreach (var c in data)
+            var snapshot = data
+                .ToDictionary(
+                    x => x.Key,
+                    x => x.Value.ToList()
+                );
+
+            foreach (var c in snapshot)
                 foreach (var item in c.Value.Where(x => x is Drink))
                     yield return item;
 
-            foreach (var c in data)
+            foreach (var c in snapshot)
                 foreach (var item in c.Value.Where(x => !(x is Drink)))
                     yield return item;
         }
