@@ -7,43 +7,17 @@ using System.Threading.Tasks;
 
 namespace Симулятор_простого_рестарана_5
 {
-    internal class TableRequests:IEnumerable<MenuItem>
+    internal class TableRequests : IEnumerable<Order>
     {
-        private Dictionary<string, List<MenuItem>> data = new Dictionary<string, List<MenuItem>>();
+        private List<Order> _orders = new List<Order>();
 
-        public void Add<T>(string customer) where T : MenuItem, new()
-        {
-            if (!data.ContainsKey(customer))
-                data[customer] = new List<MenuItem>();
+        public void AddOrder(Order order) => _orders.Add(order);
 
-            data[customer].Add(new T { CustomerName = customer });
-        }
-
-        public List<MenuItem> this[string customer]
-        {
-            get => data[customer];
-        }
-
-        public IEnumerator<MenuItem> GetEnumerator()
-        {
-            var snapshot = data
-                .ToDictionary(
-                    x => x.Key,
-                    x => x.Value.ToList()
-                );
-
-            foreach (var c in snapshot)
-                foreach (var item in c.Value.Where(x => x is Drink))
-                    yield return item;
-
-            foreach (var c in snapshot)
-                foreach (var item in c.Value.Where(x => !(x is Drink)))
-                    yield return item;
-        }
+        public IEnumerator<Order> GetEnumerator() =>
+            _orders.OrderBy(o => o.CustomerName).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public IEnumerable<string> Customers =>
-            data.Keys.OrderBy(x => x);
+        public void Clear() => _orders.Clear();
     }
 }

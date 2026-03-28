@@ -13,13 +13,14 @@ namespace Симулятор_простого_рестарана_5
     public partial class Form1 : Form
     {
         TableRequests tableRequests = new TableRequests();
-        Cook cook = new Cook(2); 
+        Cook cook = new Cook(2);
         Serever server;
+
         public Form1()
         {
             InitializeComponent();
 
-            server = new Serever(tableRequests);
+            server = new Serever();
 
             comboBox1.Items.AddRange(new string[]
             {
@@ -37,19 +38,23 @@ namespace Симулятор_простого_рестарана_5
         {
             string name = textBox3.Text;
 
-            int eggs = int.Parse(textBox1.Text);
-            int chicken = int.Parse(textBox2.Text);
+            Order newOrder = new Order { CustomerName = name };
+
+            for (int i = 0; i < int.Parse(textBox1.Text); i++)
+                newOrder.Add(new Egg());
+
+            for (int i = 0; i < int.Parse(textBox2.Text); i++)
+                newOrder.Add(new Chicken());
+
+            if (comboBox1.SelectedItem.ToString() != "None")
+            {
+                string selectedDrink = comboBox1.SelectedItem.ToString();
+                newOrder.Add(new Drink { Name = selectedDrink });
+            }
 
             lock (tableRequests)
             {
-                for (int i = 0; i < eggs; i++)
-                    tableRequests.Add<Egg>(name);
-
-                for (int i = 0; i < chicken; i++)
-                    tableRequests.Add<Chicken>(name);
-
-                if (comboBox1.SelectedItem.ToString() != "None")
-                    tableRequests.Add<Drink>(name);
+                tableRequests.AddOrder(newOrder);
             }
 
             richTextBox1.AppendText($"Order received from {name}\n");
@@ -57,27 +62,21 @@ namespace Симулятор_простого_рестарана_5
 
         private async void button2_Click(object sender, EventArgs e)
         {
-            richTextBox1.AppendText("Processing...\n");
+            richTextBox1.AppendText("Processing orders...\n");
 
-            await server.SendAsync(cook, msg =>
+            List<Order> currentOrders;
+            lock (tableRequests)
             {
-                Invoke(new Action(() =>
-                {
-                    richTextBox1.AppendText(msg + "\n");
-                }));
-            });
+                currentOrders = tableRequests.ToList();
+                tableRequests.Clear();
+            }
 
-           
-            foreach (var customer in tableRequests.Customers)
+            foreach (var order in currentOrders)
             {
-                var items = tableRequests[customer];
+                await server.ProcessOrderAsync(cook, order.Items, msg => {
+                });
 
-                int drinks = items.Count(x => x is Drink);
-                int eggs = items.Count(x => x is Egg);
-                int chicken = items.Count(x => x is Chicken);
-
-                richTextBox1.AppendText(
-                    $"{customer} ordered {drinks} drink, {eggs} egg, {chicken} chicken\n");
+                richTextBox1.AppendText(order.GetSummary() + "\n");
             }
         }
     }

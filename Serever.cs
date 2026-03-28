@@ -8,41 +8,18 @@ namespace Симулятор_простого_рестарана_5
 {
     internal class Serever
     {
-        private TableRequests table;
-        private object locker = new object();
 
-        public Serever(TableRequests t)
+        public Task ProcessOrderAsync(Cook cook, List<MenuItem> items, Action<string> log)
         {
-            table = t;
-        }
-
-
-        public async Task SendAsync(Cook cook, Action<string> log)
-        {
-            IEnumerable<MenuItem> items;
-
-            lock (locker)
-            {
-                items = table; 
-            }
-
-            var cookTask = Task.Run(async () =>
-            {
-                await cook.ProcessAsync(items);
-            });
-
-            await cookTask;
-
-            await Task.Run(() =>
-            {
-                lock (locker)
-                {
+            return cook.PrepareAllAsync(items)
+                .ContinueWith(ant => {
                     foreach (var item in items)
                     {
                         log($"Served: {item.CustomerName} - {item.GetType().Name}");
                     }
-                }
-            });
+                }, TaskScheduler.FromCurrentSynchronizationContext());
         }
     }
 }
+    
+

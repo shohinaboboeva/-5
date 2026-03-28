@@ -9,9 +9,11 @@ namespace Симулятор_простого_рестарана_5
 {
     internal class Drink:MenuItem
     {
+        public string Name { get; set; } 
+
         public override void Prepare()
         {
-            Thread.Sleep(150); 
+            Thread.Sleep(150);
         }
     }
 }

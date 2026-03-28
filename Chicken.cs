@@ -13,13 +13,14 @@ namespace Симулятор_простого_рестарана_5
         {
             Obtain();
             CutUp();
-            Cook();
+            CookChicken();
             Serve();
         }
 
         void Obtain() { Thread.Sleep(200); }
         void CutUp() { Thread.Sleep(200); }
-        void Cook() { Thread.Sleep(500); }
+        void CookChicken() { Thread.Sleep(500); }
         void Serve() { Thread.Sleep(100); }
     }
 }
+

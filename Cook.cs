@@ -9,27 +9,22 @@ namespace Симулятор_простого_рестарана_5
 {
     internal class Cook
     {
-        private SemaphoreSlim semaphore;
+        private SemaphoreSlim _semaphore;
+        public Cook(int capacity) => _semaphore = new SemaphoreSlim(capacity);
 
-        public Cook(int count)
+        public async Task PrepareAllAsync(List<MenuItem> items)
         {
-            semaphore = new SemaphoreSlim(count);
-        }
-
-        public async Task ProcessAsync(IEnumerable<MenuItem> items)
-        {
-            await semaphore.WaitAsync();
-
+            await _semaphore.WaitAsync(); 
             try
             {
-                foreach (var item in items)
+                await Task.Run(() =>
                 {
-                    item.Prepare();
-                }
+                    foreach (var item in items) item.Prepare();
+                });
             }
             finally
             {
-                semaphore.Release();
+                _semaphore.Release(); 
             }
         }
     }
