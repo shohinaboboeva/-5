@@ -15,7 +15,7 @@ namespace Симулятор_простого_рестарана_5
         TableRequests tableRequests = new TableRequests();
         Cook cook = new Cook(2);
         Serever server;
-
+        
         public Form1()
         {
             InitializeComponent();
