@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Симулятор_простого_рестарана_5
@@ -9,15 +10,20 @@ namespace Симулятор_простого_рестарана_5
     internal class Serever
     {
 
-        public Task ProcessOrderAsync(Cook cook, List<MenuItem> items, Action<string> log)
+        private readonly object _serverLock = new object();
+
+        public Task ProcessOrderAsync(Cook cook, Order order, Action<string> log)
         {
-            return cook.PrepareAllAsync(items)
+            return cook.PrepareAllAsync(order.Items.ToList())
                 .ContinueWith(ant => {
-                    foreach (var item in items)
+                    lock (_serverLock)
                     {
-                        log($"Served: {item.CustomerName} - {item.GetType().Name}");
+                        Thread.Sleep(500);
+
+                        string summary = order.GetSummary();
+                        log($"Server delivered: {summary}");
                     }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+                }, TaskScheduler.Default); 
         }
     }
 }

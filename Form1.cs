@@ -41,10 +41,10 @@ namespace Симулятор_простого_рестарана_5
             Order newOrder = new Order { CustomerName = name };
 
             for (int i = 0; i < int.Parse(textBox1.Text); i++)
-                newOrder.Add(new Egg());
+                newOrder.Add(new Chicken());
 
             for (int i = 0; i < int.Parse(textBox2.Text); i++)
-                newOrder.Add(new Chicken());
+                newOrder.Add(new Egg());
 
             if (comboBox1.SelectedItem.ToString() != "None")
             {
@@ -67,18 +67,28 @@ namespace Симулятор_простого_рестарана_5
             List<Order> currentOrders;
             lock (tableRequests)
             {
-                currentOrders = tableRequests.ToList();
+                currentOrders = tableRequests.OrderBy(o => o.CustomerName).ToList();
                 tableRequests.Clear();
             }
 
+          
+            List<Task> cookingTasks = new List<Task>();
             foreach (var order in currentOrders)
             {
-                await server.ProcessOrderAsync(cook, order.Items, msg => {
-                });
-
-                richTextBox1.AppendText(order.GetSummary() + "\n");
+                cookingTasks.Add(cook.PrepareAllAsync(order.Items.ToList()));
             }
+
+            await Task.WhenAll(cookingTasks);
+
+            foreach (var order in currentOrders)
+            {
+                await Task.Delay(500);
+
+                string summary = order.GetSummary();
+                richTextBox1.AppendText($"Server delivered: {summary}\n");
+            }
+
+            richTextBox1.AppendText("All orders served!\n");
         }
     }
-    
 }

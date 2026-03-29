@@ -19,7 +19,10 @@ namespace Симулятор_простого_рестарана_5
             {
                 await Task.Run(() =>
                 {
-                    foreach (var item in items) item.Prepare();
+                    foreach (var item in items)
+                    {
+                        item.Prepare();
+                    }
                 });
             }
             finally
